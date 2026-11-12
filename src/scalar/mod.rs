@@ -7,7 +7,7 @@ use std::fmt;
 use std::time::Instant;
 
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 
 use crate::config::{ModelKind, Optimizer, SampleConfig, Style, TrainConfig};
 use crate::data::{self, TokenizerError};
@@ -235,7 +235,7 @@ fn train_from_text(
         losses.push(mean_nll_loss(&model, eval_pairs_slice(&train_pairs)));
     } else {
         for step in 0..steps {
-            let pair_idx = rng.gen_range(0..train_pairs.len());
+            let pair_idx = rng.random_range(0..train_pairs.len());
             let (context_id, target_id) = train_pairs[pair_idx];
             let lr = training::lr_multiplier_with_schedule(step, steps, lr_schedule);
             let loss = if let Some(opt) = adamw.as_mut() {

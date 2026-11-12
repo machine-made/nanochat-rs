@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 
 use crate::config::{ModelKind, Optimizer, Style};
 use crate::data::{self, Tokenizer, TokenizerError};
@@ -375,7 +375,7 @@ fn select_training_window<'a>(token_ids: &'a [usize], rng: &mut StdRng) -> &'a [
         return token_ids;
     }
     let max_start = token_ids.len() - (MINI_GPT_BLOCK_SIZE + 1);
-    let start = rng.gen_range(0..=max_start);
+    let start = rng.random_range(0..=max_start);
     &token_ids[start..start + MINI_GPT_BLOCK_SIZE + 1]
 }
 
@@ -431,7 +431,7 @@ fn init_matrix(rows: usize, cols: usize, std: f64, rng: &mut StdRng) -> Vec<Vec<
             let value = if std == 0.0 {
                 0.0
             } else {
-                rng.gen_range(-std..std)
+                rng.random_range(-std..std)
             };
             row.push(Value::new(value));
         }

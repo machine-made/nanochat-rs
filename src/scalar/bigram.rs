@@ -1,5 +1,5 @@
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 
 use super::value::Value;
 use crate::training;
@@ -122,7 +122,7 @@ fn init_matrix(vocab_size: usize, rng: &mut StdRng) -> Vec<Vec<Value>> {
         let mut row = Vec::with_capacity(vocab_size);
         for _ in 0..vocab_size {
             // Small symmetric init keeps logits near zero at start.
-            let value = rng.gen_range(-0.01..0.01);
+            let value = rng.random_range(-0.01..0.01);
             row.push(Value::new(value));
         }
         matrix.push(row);

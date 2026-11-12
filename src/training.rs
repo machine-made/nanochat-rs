@@ -3,7 +3,7 @@ use std::fmt;
 pub use crate::config::LrSchedule;
 use crate::config::Style;
 use crate::data;
-use rand::Rng;
+use rand::RngExt;
 use rand::rngs::StdRng;
 
 pub const DEFAULT_CHECKPOINT_DIR: &str = "results/checkpoints";
@@ -111,7 +111,7 @@ pub fn weighted_choice(weights: &[f64], rng: &mut StdRng) -> usize {
         return 0;
     }
 
-    let mut sample = rng.gen_range(0.0..total);
+    let mut sample = rng.random_range(0.0..total);
     let mut last_nonzero = 0;
     for (idx, weight) in weights.iter().enumerate() {
         if *weight <= 0.0 {

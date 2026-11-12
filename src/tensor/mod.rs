@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 
 use crate::checkpoint::{CheckpointEvalError, persist_then_eval};
 use crate::config::{LrSchedule, ModelKind, Optimizer, SampleConfig, Style, TrainConfig};
@@ -447,7 +447,7 @@ fn train_from_text_cpu(
         )?;
     } else {
         for step in 0..steps {
-            let pair_idx = rng.gen_range(0..train_pairs.len());
+            let pair_idx = rng.random_range(0..train_pairs.len());
             let (context_id, target_id) = train_pairs[pair_idx];
             let lr = DEFAULT_LEARNING_RATE
                 * training::lr_multiplier_with_schedule(step, steps, runtime.lr_schedule);
@@ -584,7 +584,7 @@ fn train_from_text_tch(
         )?;
     } else {
         for step in 0..steps {
-            let pair_idx = rng.gen_range(0..train_pairs.len());
+            let pair_idx = rng.random_range(0..train_pairs.len());
             let (context_id, target_id) = train_pairs[pair_idx];
             let context =
                 Tensor::from_slice(&[i64::try_from(context_id).expect("context id fits i64")])
@@ -775,7 +775,7 @@ fn train_from_text_tch_minigpt(
         )?;
     } else {
         for step in 0..steps {
-            let window_idx = rng.gen_range(0..train_windows.len());
+            let window_idx = rng.random_range(0..train_windows.len());
             let window = &train_windows[window_idx];
             let context = Tensor::from_slice(&window.context).to(device);
             let target = Tensor::from_slice(&[window.target]).to(device);
@@ -1178,7 +1178,7 @@ fn init_matrix(vocab_size: usize, rng: &mut StdRng) -> Vec<Vec<f64>> {
     for _ in 0..vocab_size {
         let mut row = Vec::with_capacity(vocab_size);
         for _ in 0..vocab_size {
-            row.push(rng.gen_range(-0.01..0.01));
+            row.push(rng.random_range(-0.01..0.01));
         }
         matrix.push(row);
     }
@@ -1372,7 +1372,7 @@ mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     use rand::rngs::StdRng;
-    use rand::{Rng, SeedableRng};
+    use rand::{RngExt, SeedableRng};
 
     use crate::config::{
         AppCommand, Mode, ModelKind, Optimizer, RuntimeConfig, SampleConfig, Style, TrainConfig,
@@ -2018,7 +2018,7 @@ mod tests {
         let steps = 24usize;
         let mut rng = StdRng::seed_from_u64(17 ^ 0xD1B5_4A32_44C1_AA77);
         let pair_indices: Vec<usize> = (0..steps)
-            .map(|_| rng.gen_range(0..train_pairs.len()))
+            .map(|_| rng.random_range(0..train_pairs.len()))
             .collect();
 
         let mut rust_model = TensorBigram {
