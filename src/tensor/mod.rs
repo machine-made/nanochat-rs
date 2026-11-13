@@ -1052,7 +1052,7 @@ fn sample_from_text_tch_minigpt(
     }
 
     let device = resolve_tch_device();
-    let _ = tch::manual_seed(seed as i64);
+    tch::manual_seed(seed as i64);
     let vocab_size = i64::try_from(tokenizer.vocab_size()).expect("vocab size fits i64");
     let block_size = i64::try_from(MINI_GPT_BLOCK_SIZE).expect("block size fits i64");
     let vs = VarStore::new(device);
