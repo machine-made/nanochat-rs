@@ -9,3 +9,5 @@ results/*_logs/
 results/gpu_profile_*/
 external/
 references/nanochat/
+.jac
+/AGENTS.md

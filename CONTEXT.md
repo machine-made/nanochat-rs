@@ -1,12 +1,11 @@
 # Language Model Experiment
 
-`nanochat-rs` is a separate Rust experiment for training and evaluating tiny language models against nanochat baselines. It shares the organization namespace but is not part of the `nanotrade` critical path.
+`nanochat-rs` is a separate Rust experiment for training and evaluating tiny language models against nanochat baselines.
 
 ## Language
 
 **Language Model Experiment**:
 The Rust-first context for reproducible tiny language-model training, sampling, ablation, parity, and benchmarking.
-_Avoid_: trading module
 
 **Corpus**:
 The input text used to construct tokenizer vocabulary, token pairs, and train/validation splits.
@@ -71,13 +70,8 @@ _Avoid_: file
 - **Ablation → Training Run**: One ablation contains multiple comparable training runs.
 - **Baseline → Training Run**: A baseline run provides a comparison point for one or more local runs.
 - **Parity Run → Baseline**: One parity run compares local behavior against one baseline or reference.
-- **Language Model Experiment ↛ Trading Orchestration**: This context does not provide runtime contracts to `nanotrade`.
 
 ## Example Dialogue
-
-Dev: Should `nanochat-rs` appear as a dependency in `nanotrade`?
-
-Domain expert: No. It is a separate experiment, not a trading-stack support module.
 
 Dev: A benchmark produces checkpoints and metrics. What should we call them together?
 
@@ -88,9 +82,6 @@ Dev: Is tensor mode the same thing as mini-gpt?
 Domain expert: No. Tensor is an engine mode; mini-gpt is a model kind.
 
 ## Flagged Ambiguities
-
-**nano prefix**:
-The `nanochat-rs` name shares the `nano` prefix, but it is not part of the nano trading stack.
 
 **mode vs model kind**:
 Use "engine mode" for scalar/tensor and "model kind" for bigram/mini-gpt.

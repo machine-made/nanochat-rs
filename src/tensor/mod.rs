@@ -333,13 +333,10 @@ fn train_from_text(
     text: &str,
     steps: usize,
     seed: u64,
-    model_kind: ModelKind,
-    optimizer: Optimizer,
-    lr_schedule: LrSchedule,
-    style: Style,
     tie_lm_head: bool,
-    input_rmsnorm: bool,
 ) -> Result<TrainMetrics, TensorError> {
+    let model_kind = ModelKind::Bigram;
+    let optimizer = Optimizer::Sgd;
     ensure_tensor_support(model_kind)?;
     ensure_tensor_optimizer_support(optimizer)?;
     train_from_text_with_checkpoints(
@@ -348,13 +345,13 @@ fn train_from_text(
         seed,
         model_kind,
         optimizer,
-        style,
+        Style::Classic,
         tie_lm_head,
-        input_rmsnorm,
+        false,
         TensorTrainRuntime {
             checkpoint_every: 0,
             checkpoint_dir: Path::new(training::DEFAULT_CHECKPOINT_DIR),
-            lr_schedule,
+            lr_schedule: LrSchedule::Linear,
         },
     )
 }
@@ -1470,30 +1467,8 @@ mod tests {
 
     #[test]
     fn train_loss_drops_on_repetitive_text() {
-        let baseline = train_from_text(
-            "abababababababab",
-            0,
-            13,
-            ModelKind::Bigram,
-            Optimizer::Sgd,
-            training::LrSchedule::Linear,
-            Style::Classic,
-            true,
-            false,
-        )
-        .expect("baseline metrics");
-        let trained = train_from_text(
-            "abababababababab",
-            400,
-            13,
-            ModelKind::Bigram,
-            Optimizer::Sgd,
-            training::LrSchedule::Linear,
-            Style::Classic,
-            true,
-            false,
-        )
-        .expect("trained metrics");
+        let baseline = train_from_text("abababababababab", 0, 13, true).expect("baseline metrics");
+        let trained = train_from_text("abababababababab", 400, 13, true).expect("trained metrics");
         assert!(trained.mean_loss_last_n < baseline.final_loss);
         assert!(trained.final_loss.is_finite());
     }
@@ -1755,18 +1730,7 @@ mod tests {
 
     #[test]
     fn empty_input_errors() {
-        let err = train_from_text(
-            "",
-            1,
-            0,
-            ModelKind::Bigram,
-            Optimizer::Sgd,
-            training::LrSchedule::Linear,
-            Style::Classic,
-            true,
-            false,
-        )
-        .expect_err("empty dataset");
+        let err = train_from_text("", 1, 0, true).expect_err("empty dataset");
         match err {
             TensorError::EmptyDataset => {}
             _ => panic!("unexpected error type"),
@@ -1775,18 +1739,8 @@ mod tests {
 
     #[test]
     fn train_handles_minimal_dataset_split_fallback() {
-        let metrics = train_from_text(
-            "a",
-            1,
-            1,
-            ModelKind::Bigram,
-            Optimizer::Sgd,
-            training::LrSchedule::Linear,
-            Style::Classic,
-            true,
-            false,
-        )
-        .expect("metrics should be produced for minimal text");
+        let metrics =
+            train_from_text("a", 1, 1, true).expect("metrics should be produced for minimal text");
         assert_eq!(metrics.train_tokens, 1);
         let val_loss = metrics
             .val_loss
@@ -1807,47 +1761,14 @@ mod tests {
 
     #[test]
     fn untied_metrics_report_more_parameters() {
-        let tied = train_from_text(
-            "abababababababab",
-            0,
-            5,
-            ModelKind::Bigram,
-            Optimizer::Sgd,
-            training::LrSchedule::Linear,
-            Style::Classic,
-            true,
-            false,
-        )
-        .expect("tied metrics");
-        let untied = train_from_text(
-            "abababababababab",
-            0,
-            5,
-            ModelKind::Bigram,
-            Optimizer::Sgd,
-            training::LrSchedule::Linear,
-            Style::Classic,
-            false,
-            false,
-        )
-        .expect("untied metrics");
+        let tied = train_from_text("abababababababab", 0, 5, true).expect("tied metrics");
+        let untied = train_from_text("abababababababab", 0, 5, false).expect("untied metrics");
         assert!(untied.parameter_count > tied.parameter_count);
     }
 
     #[test]
     fn train_reports_backend_and_device() {
-        let metrics = train_from_text(
-            "abababababababab",
-            1,
-            5,
-            ModelKind::Bigram,
-            Optimizer::Sgd,
-            training::LrSchedule::Linear,
-            Style::Classic,
-            true,
-            false,
-        )
-        .expect("metrics");
+        let metrics = train_from_text("abababababababab", 1, 5, true).expect("metrics");
         assert!(!metrics.backend.is_empty());
         assert!(!metrics.device.is_empty());
         if metrics.using_gpu {
@@ -1867,33 +1788,12 @@ mod tests {
 
     #[test]
     fn train_reports_finite_throughput_metrics() {
-        let zero_step = train_from_text(
-            "abababababababab",
-            0,
-            11,
-            ModelKind::Bigram,
-            Optimizer::Sgd,
-            training::LrSchedule::Linear,
-            Style::Classic,
-            true,
-            false,
-        )
-        .expect("zero-step metrics");
+        let zero_step =
+            train_from_text("abababababababab", 0, 11, true).expect("zero-step metrics");
         assert_eq!(zero_step.steps_per_sec, 0.0);
         assert_eq!(zero_step.tokens_per_sec, 0.0);
 
-        let trained = train_from_text(
-            "abababababababab",
-            8,
-            11,
-            ModelKind::Bigram,
-            Optimizer::Sgd,
-            training::LrSchedule::Linear,
-            Style::Classic,
-            true,
-            false,
-        )
-        .expect("trained metrics");
+        let trained = train_from_text("abababababababab", 8, 11, true).expect("trained metrics");
         assert!(trained.steps_per_sec.is_finite());
         assert!(trained.tokens_per_sec.is_finite());
         assert!(trained.steps_per_sec > 0.0);
@@ -1903,18 +1803,7 @@ mod tests {
     #[test]
     fn train_uses_split_and_reports_validation_loss() {
         let text = "abcdefghijklmnopqrstuvwxyz";
-        let metrics = train_from_text(
-            text,
-            5,
-            29,
-            ModelKind::Bigram,
-            Optimizer::Sgd,
-            training::LrSchedule::Linear,
-            Style::Classic,
-            true,
-            false,
-        )
-        .expect("metrics");
+        let metrics = train_from_text(text, 5, 29, true).expect("metrics");
 
         let tokenizer = crate::data::Tokenizer::from_text(text);
         let token_ids = tokenizer
