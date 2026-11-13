@@ -41,7 +41,7 @@ jobs:
         run: cargo fmt --check
 
       - name: Cargo clippy
-        run: cargo clippy --locked -- -D warnings
+        run: cargo clippy --locked --all-targets -- -D warnings
 
       - name: Compile tests
         run: cargo test --locked --no-run
