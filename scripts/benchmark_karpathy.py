@@ -298,7 +298,7 @@ def install_python_torch_cuda(
         return
     install = run_bash(
         "python3 -m pip install --upgrade pip && "
-        f"python3 -m pip install torch==2.15.0 --index-url {shlex.quote(index_url)}",
+        f"python3 -m pip install torch --index-url {shlex.quote(index_url)}",
         check=False,
     )
     write_command_log(log_dir, "install_python_torch_primary", install)
@@ -306,7 +306,7 @@ def install_python_torch_cuda(
         return
     fallback = run_bash(
         "python3 -m pip install --upgrade pip && "
-        f"python3 -m pip install torch==2.15.0 --index-url {shlex.quote(fallback_index_url)}",
+        f"python3 -m pip install torch --index-url {shlex.quote(fallback_index_url)}",
         check=False,
     )
     write_command_log(log_dir, "install_python_torch_fallback", fallback)
