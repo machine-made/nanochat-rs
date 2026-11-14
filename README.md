@@ -1,4 +1,4 @@
-![nanochat-rs banner](https://raw.githubusercontent.com/machine-made/nanochat-rs/main/assets/nanochat-rs-banner.png)
+![nanochat-rs banner](https://raw.githubusercontent.com/machine-made/nanochat-rs/main/assets/readme-banner-v3.jpg)
 
 [![CI](https://github.com/machine-made/nanochat-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/machine-made/nanochat-rs/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
